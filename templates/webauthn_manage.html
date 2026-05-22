@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Fingerprint &amp; security keys</h3>
+                    <a href="{% url 'expense_list' %}" class="btn btn-sm btn-outline-secondary">Back</a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Each entry below is one device that can sign you in without your password.
+                        Add this device, your phone, or a hardware key. Remove any you no longer trust.
+                    </p>
+
+                    <div class="d-grid mb-3">
+                        <button id="registerBtn" type="button" class="btn btn-success">
+                            <span aria-hidden="true">&#128274;</span>
+                            Register fingerprint on this device
+                        </button>
+                    </div>
+
+                    <div id="regStatus" class="alert" style="display:none;"></div>
+
+                    {% if credentials %}
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Label</th>
+                                    <th>Registered</th>
+                                    <th>Last used</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in credentials %}
+                                <tr>
+                                    <td>{{ c.label }}</td>
+                                    <td>{{ c.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{% if c.last_used_at %}{{ c.last_used_at|date:"Y-m-d H:i" }}{% else %}<span class="text-muted">never</span>{% endif %}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'webauthn_delete' c.pk %}"
+                                              onsubmit="return confirm('Remove this device? You will need your password to sign in from it again.');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted"><em>No fingerprints registered yet.</em></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'webauthn.js' %}"></script>
+<script>
+(function () {
+  const btn = document.getElementById('registerBtn');
+  const status = document.getElementById('regStatus');
+
+  function show(msg, kind) {
+    status.className = 'alert alert-' + (kind || 'info');
+    status.textContent = msg;
+    status.style.display = 'block';
+  }
+
+  btn.addEventListener('click', async function () {
+    const label = prompt('Name this device (e.g. "Work laptop", "iPhone"):', 'Fingerprint');
+    if (label === null) return;
+    btn.disabled = true;
+    show('Touch your fingerprint sensor to register…', 'info');
+    try {
+      const r = await window.registerFingerprint({ label });
+      if (r.ok) {
+        show('Registered "' + r.label + '". Reloading…', 'success');
+        setTimeout(() => location.reload(), 800);
+      } else {
+        show(r.error || 'Registration failed.', 'danger');
+        btn.disabled = false;
+      }
+    } catch (e) {
+      show(e.message || 'Registration failed.', 'danger');
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+{% endblock %}

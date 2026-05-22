@@ -1,0 +1,5 @@
+.balance-positive { color: #28a745; }
+.balance-negative { color: #dc3545; }
+.app-shell { min-height: 100vh; background: #f8f9fa; }
+.fp-status { white-space: pre-wrap; }
+.table td, .table th { vertical-align: middle; }

@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Redirecting…</title>
+  <script>
+    // GitHub Pages SPA fallback. Pages has no real router, so it serves 404.html
+    // for every unknown URL. This script rewrites the URL into a query string
+    // and bounces to index.html, where main.jsx reconstructs the path.
+    var pathPrefix = "/expenser/";
+    var p = window.location.pathname;
+    if (p.indexOf(pathPrefix) === 0) {
+      var rest = p.slice(pathPrefix.length);
+      window.location.replace(pathPrefix + "?p=" + encodeURIComponent(rest) + window.location.search.replace(/^\?/, "&") + window.location.hash);
+    } else {
+      document.body.innerText = "Page not found.";
+    }
+  </script>
+</head>
+<body></body>
+</html>
