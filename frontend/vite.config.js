@@ -8,16 +8,6 @@ const base = process.env.VITE_BASE || "/expenser/";
 export default defineConfig({
   plugins: [react()],
   base,
-  server: {
-    port: 5173,
-    proxy: {
-      // During `npm run dev`, forward /api to a local Django on :9099 so you
-      // don't hit CORS or HTTPS in development.
-      "/api": "http://127.0.0.1:9099",
-    },
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: false,
-  },
+  server: { port: 5173 },
+  build: { outDir: "dist", sourcemap: false },
 });

@@ -1,7 +1,0 @@
-Django>=4.2,<6
-djangorestframework>=3.16
-django-cors-headers>=4.4
-python-dotenv>=1.0
-cryptography>=43
-sqlcipher3-binary>=0.5
-webauthn>=2.7,<3

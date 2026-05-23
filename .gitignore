@@ -7,12 +7,14 @@ __pycache__/
 venv/
 myenv/
 
-# SQLite databases
+# SQLite databases (don't accidentally commit user data),
+# but DO ship the seed DB the React app loads at startup.
 db.sqlite3
 *.sqlite3
 *.bak
 *.old-plaintext
 *.encrypted
+!frontend/public/db.sqlite3
 
 # Logs
 *.log

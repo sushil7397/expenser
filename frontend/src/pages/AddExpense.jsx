@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api } from "../api.js";
-import { useAuth } from "../auth.jsx";
+import { addExpense } from "../data.js";
 
 export default function AddExpense() {
-  const { refreshMe } = useAuth();
   const navigate = useNavigate();
   const [place, setPlace] = useState("");
   const [amount, setAmount] = useState("");
@@ -14,17 +12,13 @@ export default function AddExpense() {
 
   async function onSubmit(e) {
     e.preventDefault();
-    setErr(""); setBusy(true);
+    setErr("");
+    const a = parseFloat(amount);
+    if (!place.trim()) { setErr("Place is required."); return; }
+    if (!isFinite(a) || a <= 0) { setErr("Amount must be a positive number."); return; }
+    setBusy(true);
     try {
-      await api("/expenses/", {
-        method: "POST",
-        body: {
-          expense_place: place.trim(),
-          expense_amount: amount,
-          transaction_type: type,
-        },
-      });
-      await refreshMe(); // balance changed
+      await addExpense({ expense_place: place, expense_amount: a, transaction_type: type });
       navigate("/");
     } catch (ex) {
       setErr(ex.message || "Save failed.");
@@ -44,13 +38,14 @@ export default function AddExpense() {
                 <div className="mb-3">
                   <label className="form-label">Place</label>
                   <input className="form-control" placeholder="Enter location"
-                         value={place} onChange={(e) => setPlace(e.target.value)} required />
+                         value={place} onChange={(e) => setPlace(e.target.value)} autoFocus />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Transaction Details</label>
                   <div className="row">
                     <div className="col-md-4">
-                      <select className="form-control" value={type} onChange={(e) => setType(e.target.value)}>
+                      <select className="form-control" value={type}
+                              onChange={(e) => setType(e.target.value)}>
                         <option value="debit">Debit (-)</option>
                         <option value="credit">Credit (+)</option>
                       </select>
@@ -60,7 +55,7 @@ export default function AddExpense() {
                         <span className="input-group-text">₹</span>
                         <input className="form-control" type="number" step="0.01"
                                placeholder="0.00" value={amount}
-                               onChange={(e) => setAmount(e.target.value)} required />
+                               onChange={(e) => setAmount(e.target.value)} />
                       </div>
                     </div>
                   </div>

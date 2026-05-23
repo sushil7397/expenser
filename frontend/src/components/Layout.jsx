@@ -1,17 +1,9 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth.jsx";
+import { Link, NavLink, Outlet } from "react-router-dom";
+import { useExpenses } from "../data.js";
 
 export default function Layout() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  async function onLogout() {
-    await logout();
-    navigate("/login", { replace: true });
-  }
-
-  const bal = parseFloat(user?.balance || "0");
-  const balCls = bal >= 0 ? "balance-positive" : "balance-negative";
+  const { balance, loading } = useExpenses();
+  const balCls = balance >= 0 ? "balance-positive" : "balance-negative";
 
   return (
     <div className="app-shell">
@@ -19,18 +11,13 @@ export default function Layout() {
         <div className="container">
           <Link className="navbar-brand" to="/">Expense Tracker</Link>
           <ul className="navbar-nav ms-auto d-flex flex-row gap-3 align-items-center">
-            <li className="nav-item"><NavLink className="nav-link" to="/">Expenses</NavLink></li>
+            <li className="nav-item"><NavLink className="nav-link" to="/" end>Expenses</NavLink></li>
             <li className="nav-item"><NavLink className="nav-link" to="/add">Add</NavLink></li>
             <li className="nav-item"><NavLink className="nav-link" to="/analytics">Analytics</NavLink></li>
-            <li className="nav-item"><NavLink className="nav-link" to="/fingerprints">🔒 Fingerprint</NavLink></li>
             <li className="nav-item">
-              <span className={`nav-link ${balCls}`}>Balance: ₹{user?.balance}</span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-link">Hi, {user?.username}</span>
-            </li>
-            <li className="nav-item">
-              <button onClick={onLogout} className="btn btn-sm btn-outline-light">Logout</button>
+              {loading
+                ? <span className="nav-link text-muted">Loading…</span>
+                : <span className={`nav-link ${balCls}`}>Balance: ₹{balance.toFixed(2)}</span>}
             </li>
           </ul>
         </div>
