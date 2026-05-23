@@ -33,10 +33,7 @@ export default function Login() {
             <p className="text-muted mb-0">Sign in to your expense tracker</p>
           </div>
           <form onSubmit={onSubmit}>
-            <div className="alert alert-info py-2 mb-3 small">
-              <strong>First time?</strong> Default admin is <code>sushil</code> / <code>changeme123</code>.
-              Change it from the Admin tab right after logging in.
-            </div>
+
             <div className="mb-3">
               <label className="form-label">Username</label>
               <input className="form-control form-control-lg" value={username} autoFocus
