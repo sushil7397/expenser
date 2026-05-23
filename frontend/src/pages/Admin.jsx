@@ -187,7 +187,7 @@ function AdminUsersPanel({ users, currentUserId, onReload }) {
         <thead className="table-light">
           <tr>
             <th>ID</th><th>Username</th><th>Role</th>
-            <th>Balance override</th><th>Created</th><th />
+            <th>Current balance</th><th>Created</th><th />
           </tr>
         </thead>
         <tbody>

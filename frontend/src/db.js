@@ -20,7 +20,7 @@ import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 
 const IDB_NAME = "expenser";
 const IDB_STORE = "kv";
-const IDB_KEY = "db_blob_v4";   // bump if you ever do an incompatible schema change
+const IDB_KEY = "db_blob_v5";   // bump if you ever do an incompatible schema change
 
 const CURRENT_USER_KEY = "expenser_current_user_v1";
 
@@ -312,34 +312,62 @@ export async function listExpenses({ userId, all = false } = {}) {
   ));
 }
 
+// If the owning user has a balance_override set, shift it by `delta`.
+// delta is positive for credits, negative for debits. No-op when the user
+// has no override (then the running-net fallback in data.js handles things).
+function adjustOverride(userId, delta) {
+  const row = rowsFrom(dbInstance.exec(
+    "SELECT balance_override FROM users WHERE id = ?", [userId],
+  ))[0];
+  if (!row || row.balance_override == null || row.balance_override === "") return;
+  const current = parseFloat(row.balance_override) || 0;
+  const next = (current + delta).toFixed(2);
+  dbInstance.run("UPDATE users SET balance_override = ? WHERE id = ?", [next, userId]);
+}
+
+function signed(amount, type) {
+  return type === "credit" ? +amount : -amount;
+}
+
 export async function addExpense({ user_id, expense_place, expense_amount, transaction_type }) {
   await ready();
   const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const date = new Date().toISOString();
-  const amount = Number(expense_amount).toFixed(2);
+  const amount = Number(expense_amount);
   dbInstance.run(
     `INSERT INTO expenses (id, user_id, date, expense_place, expense_amount, transaction_type)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    [id, user_id, date, String(expense_place).trim(), amount, transaction_type]
+    [id, user_id, date, String(expense_place).trim(), amount.toFixed(2), transaction_type]
   );
+  adjustOverride(user_id, signed(amount, transaction_type));
   await persist();
   notify();
 }
 
-// Admin-only.
+// Admin-only. Reverses the old expense's effect, then applies the new one,
+// so the user's running balance stays correct.
 export async function updateExpense(id, { expense_place, expense_amount, transaction_type }) {
   await ready();
+  const old = rowsFrom(dbInstance.exec(
+    "SELECT user_id, expense_amount, transaction_type FROM expenses WHERE id = ?", [id],
+  ))[0];
+  if (!old) return;
+  const newAmount = Number(expense_amount);
   dbInstance.run(
     `UPDATE expenses
        SET expense_place = ?, expense_amount = ?, transaction_type = ?
      WHERE id = ?`,
     [
       String(expense_place).trim(),
-      Number(expense_amount).toFixed(2),
+      newAmount.toFixed(2),
       transaction_type,
       id,
     ],
   );
+  // Net delta = new effect − old effect.
+  const oldDelta = signed(parseFloat(old.expense_amount), old.transaction_type);
+  const newDelta = signed(newAmount, transaction_type);
+  adjustOverride(old.user_id, newDelta - oldDelta);
   await persist();
   notify();
 }
@@ -347,7 +375,14 @@ export async function updateExpense(id, { expense_place, expense_amount, transac
 // Admin-only.
 export async function deleteExpense(id) {
   await ready();
+  const old = rowsFrom(dbInstance.exec(
+    "SELECT user_id, expense_amount, transaction_type FROM expenses WHERE id = ?", [id],
+  ))[0];
   dbInstance.run("DELETE FROM expenses WHERE id = ?", [id]);
+  if (old) {
+    // Reverse the deleted expense's effect on the user's balance.
+    adjustOverride(old.user_id, -signed(parseFloat(old.expense_amount), old.transaction_type));
+  }
   await persist();
   notify();
 }

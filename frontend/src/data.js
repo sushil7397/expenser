@@ -31,12 +31,19 @@ export function useExpenses() {
   }, [user?.id]);
 
   const balance = useMemo(() => {
-    if (!rows || !user) return 0;
-    const override = user.balance_override != null ? parseFloat(user.balance_override) : 0;
+    if (!user) return 0;
+    // If the user has a manual balance set, that IS the current balance.
+    // New expenses adjust this value in db.js, so the displayed number always
+    // matches what's in the Admin field.
+    if (user.balance_override != null && user.balance_override !== "") {
+      return parseFloat(user.balance_override);
+    }
+    // No manual override → fall back to running net of all expenses.
+    if (!rows) return 0;
     return rows.reduce((sum, e) => {
       const a = parseFloat(e.expense_amount) || 0;
       return e.transaction_type === "credit" ? sum + a : sum - a;
-    }, override);
+    }, 0);
   }, [rows, user]);
 
   return { rows: rows ?? [], balance, loading: rows === null, error };
