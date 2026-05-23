@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { addExpense } from "../data.js";
+import { useAuth } from "../auth.jsx";
 
 export default function AddExpense() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [place, setPlace] = useState("");
   const [amount, setAmount] = useState("");
@@ -18,7 +20,12 @@ export default function AddExpense() {
     if (!isFinite(a) || a <= 0) { setErr("Amount must be a positive number."); return; }
     setBusy(true);
     try {
-      await addExpense({ expense_place: place, expense_amount: a, transaction_type: type });
+      await addExpense({
+        user_id: user.id,
+        expense_place: place,
+        expense_amount: a,
+        transaction_type: type,
+      });
       navigate("/");
     } catch (ex) {
       setErr(ex.message || "Save failed.");
@@ -28,43 +35,42 @@ export default function AddExpense() {
   return (
     <div className="mt-4">
       <div className="row justify-content-center">
-        <div className="col-md-6">
+        <div className="col-md-7 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-header bg-primary text-white">
-              <h3 className="mb-0">Add New Expense</h3>
+              <h4 className="mb-0">Add new expense</h4>
             </div>
-            <div className="card-body">
+            <div className="card-body p-4">
               <form onSubmit={onSubmit}>
                 <div className="mb-3">
                   <label className="form-label">Place</label>
-                  <input className="form-control" placeholder="Enter location"
+                  <input className="form-control form-control-lg" placeholder="Where was this?"
                          value={place} onChange={(e) => setPlace(e.target.value)} autoFocus />
                 </div>
-                <div className="mb-3">
-                  <label className="form-label">Transaction Details</label>
-                  <div className="row">
-                    <div className="col-md-4">
-                      <select className="form-control" value={type}
-                              onChange={(e) => setType(e.target.value)}>
-                        <option value="debit">Debit (-)</option>
-                        <option value="credit">Credit (+)</option>
-                      </select>
-                    </div>
-                    <div className="col-md-8">
-                      <div className="input-group">
-                        <span className="input-group-text">₹</span>
-                        <input className="form-control" type="number" step="0.01"
-                               placeholder="0.00" value={amount}
-                               onChange={(e) => setAmount(e.target.value)} />
-                      </div>
+                <div className="row g-3 mb-3">
+                  <div className="col-md-5">
+                    <label className="form-label">Type</label>
+                    <select className="form-select form-select-lg" value={type}
+                            onChange={(e) => setType(e.target.value)}>
+                      <option value="debit">Debit (−)</option>
+                      <option value="credit">Credit (+)</option>
+                    </select>
+                  </div>
+                  <div className="col-md-7">
+                    <label className="form-label">Amount</label>
+                    <div className="input-group input-group-lg">
+                      <span className="input-group-text">₹</span>
+                      <input className="form-control" type="number" step="0.01"
+                             placeholder="0.00" value={amount}
+                             onChange={(e) => setAmount(e.target.value)} />
                     </div>
                   </div>
                 </div>
-                {err && <div className="alert alert-danger">{err}</div>}
-                <div className="mt-4 d-flex justify-content-between">
-                  <Link to="/" className="btn btn-secondary">Cancel</Link>
-                  <button className="btn btn-success" disabled={busy}>
-                    {busy ? "Saving…" : "Save Expense"}
+                {err && <div className="alert alert-danger py-2">{err}</div>}
+                <div className="d-flex justify-content-between mt-4">
+                  <Link to="/" className="btn btn-outline-secondary">Cancel</Link>
+                  <button className="btn btn-success btn-lg" disabled={busy}>
+                    {busy ? "Saving…" : "Save expense"}
                   </button>
                 </div>
               </form>

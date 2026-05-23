@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import App from "./App.jsx";
+import { AuthProvider } from "./auth.jsx";
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
 
@@ -24,7 +25,9 @@ const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter basename={basename}>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

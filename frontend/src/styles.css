@@ -1,5 +1,53 @@
-.balance-positive { color: #28a745; }
+/* Layout chrome */
+.app-shell { min-height: 100vh; background: #f5f7fb; }
+.brand-mark {
+  display: inline-block;
+  width: 30px; height: 30px; line-height: 30px;
+  text-align: center;
+  background: linear-gradient(135deg, #5b8def, #3a6cd5);
+  border-radius: 8px;
+  color: #fff;
+  margin-right: 4px;
+  font-weight: 700;
+}
+
+/* Auth pages */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #f5f7fb 0%, #e7edf7 100%);
+  padding: 24px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  border: 0;
+  border-radius: 16px;
+}
+.auth-logo {
+  width: 56px; height: 56px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #5b8def, #3a6cd5);
+  color: #fff;
+  border-radius: 16px;
+  font-size: 28px; font-weight: 700;
+}
+.auth-disclaimer {
+  margin-top: 18px;
+  max-width: 440px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+/* Dashboard tweaks */
+.card { border: 1px solid #e7eaf3; border-radius: 12px; }
+.card-header { border-bottom: 1px solid #eef0f6; }
+.balance-positive { color: #198754; }
 .balance-negative { color: #dc3545; }
-.app-shell { min-height: 100vh; background: #f8f9fa; }
-.fp-status { white-space: pre-wrap; }
-.table td, .table th { vertical-align: middle; }
+.table > :not(caption) > * > * { padding: 0.85rem 0.85rem; }
+.bg-danger-subtle { background-color: #fdecef !important; }
+.bg-success-subtle { background-color: #e7f6ed !important; }
