@@ -20,7 +20,7 @@ import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 
 const IDB_NAME = "expenser";
 const IDB_STORE = "kv";
-const IDB_KEY = "db_blob_v3";   // bump if you ever do an incompatible schema change
+const IDB_KEY = "db_blob_v4";   // bump if you ever do an incompatible schema change
 
 const CURRENT_USER_KEY = "expenser_current_user_v1";
 
